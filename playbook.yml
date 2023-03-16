@@ -1,0 +1,43 @@
+---
+- name: Setup Terraform on New Ubuntu 20.04 System
+  hosts: all
+  gather_facts: true
+  tasks:
+  
+    - name: Update the APT Package Cache
+      become: true
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+        
+    - name: Before we add the Hashicorp Repo - we add the signing key
+      become: true
+      apt_key:
+        url: "https://apt.releases.hashicorp.com/gpg"
+        state: present
+        
+    - name: We now add the Hashicorp Repo to Ubuntu
+      become: true
+      apt_repository:
+        repo: "deb [arch=amd64] https://apt.releases.hashicorp.com focal main"
+        state: present
+        
+    - name: Install software from standard repos and hashicorp
+      become: true
+      package:
+        name:
+          - docker.io
+          - gnupg
+          - software-properties-common
+          - curl
+          - terraform
+          - tree
+          - jq
+          - vim
+          
+    - name: We add the local USER to the Docker group
+      become: true
+      user:
+        name: "{{ lookup('env', 'USER') }}"
+        groups: docker
+        append: true
